@@ -36,12 +36,13 @@ def get_statement_from_code(code):
 def ast_to_str(node):
     """ String representation of an abstract syntax tree
     """
+    check_class(node, ast.AST)
     node_type = type(node)
     
     if node_type == ast.Num:
-        return str(node.n)
+        return repr(node.n)  # escapes quotes
     elif node_type == ast.Str:
-        return node.s
+        return repr(node.s)
     elif node_type == ast.Name:
         return node.id
     
@@ -78,17 +79,68 @@ def ast_to_str(node):
             raise ValueError("Targets should be of length 1. Got: {}".format(len(node.targets)))
         
         target = node.targets[0]
-        if not isinstance(target.ctx, ast.Store):
+        if not isinstance(target, ast.Name):
+            raise ValueError("Target should be a Name node. Got: {}".format(target.ctx))
+        
+        if not isinstance(target.ctx, ast.Store): # sanity check 
             raise AssertionError("Target.ctx should be store. Got: {}".format(target.ctx))
         
         return "{} = {}".format(target.id, ast_to_str(node.value))
     
     else:
-        return TypeError("Unsupported node type: {}".format(node_type))
+        raise ValueError("Unsupported node type: {}".format(node_type))
+    
+    
+
+# TODO: use symbtable module?
+def expression_symbols(node):
+    """ Returns a list of symbols used in an expression
+    """
+    check_class(node, ast.AST)
+    node_type = type(node)
+    
+    if node_type == ast.Expr:
+        return expression_symbols(node.value)
+    elif node_type == ast.Num:
+        return []
+    elif node_type == ast.Str:
+        return []
+    elif node_type == ast.Name:
+        return [node.id]
+    elif node_type == ast.UnaryOp:
+        return expression_symbols(node.operand)
+    elif node_type == ast.BinOp:
+        return expression_symbols(node.left) + expression_symbols(node.right)
+    else:
+        raise ValueError("Unsupported node type: {}".format(node_type))
+    
+
+def assignment_symbols(node):
+    """ Returns (lsymbols, rsymbols) tuple, where lsymbols and rsymbols are the lists of
+        symbols used left and right of the assignment operator.
+    """
+    check_class(node, ast.AST)
+    node_type = type(node)
+    
+    if node_type == ast.Assign:
+        # Targets can have more than one element. E.g. when the statement is: a = b = 6
+        # This is not supported (at the moment)
+        if len(node.targets) != 1:
+            raise ValueError("Targets should be of length 1. Got: {}".format(len(node.targets)))
+        
+        target = node.targets[0]
+        if not isinstance(target.ctx, ast.Store): # sanity check
+            raise AssertionError("Target.ctx should be store. Got: {}".format(target.ctx))
+        
+        return (expression_symbols(target), expression_symbols(node.value))
+    else:
+        raise ValueError("Unsupported node type: {}".format(node_type))
     
     
 if __name__ == "__main__":
     
-    print ast_to_str(get_statement_from_code("a = 3.33000"))
+    print ast_to_str(get_statement_from_code("a = True"))
+    print ast_to_str(get_statement_from_code(r"a = 'escaped \" quote'"))
+    #print assignment_symbols(get_statement_from_code("a = a + b"))
     
         

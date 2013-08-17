@@ -2,6 +2,12 @@
 
 TODO: booleans, complex numbers.
 
+Applications:
+    - Compact calendar
+    - Signal processing
+    - Dagobert
+    - Measurement database
+
 """
 
 import ast
@@ -10,7 +16,7 @@ from astviewer import view
 from objbrowser import browse
 
 from pepcalk.utils import check_class, logging_basic_config 
-from pepcal.absynt import get_statements_from_code
+from pepcalk.absynt import get_statements_from_code
 
 import logging
 logger = logging.getLogger(__name__)
@@ -37,7 +43,7 @@ def parse_assign_statement(statement):
 def main():
     logging_basic_config("DEBUG")
     
-    correct_code = ["a = 6; a2 = '5'" , 
+    correct_code = ["a = True; a2 = '5'" , 
                     "b = -2 -(-a) + (+a2)", 
                     "c = a+3", 
                     "d = c * b", 
@@ -48,8 +54,8 @@ def main():
     self_ref_code = ["a = 6", "b = -2", "a=a+2"]
     code = "\n".join(correct_code)
     
-    if 1:
-        view(source_code = code, mode="single", width=800, height=600)
+    if 0:
+        view(source_code = "a+b", mode="single", width=800, height=600)
     else:
         statements = get_statements_from_code(code)
             
