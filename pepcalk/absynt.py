@@ -112,7 +112,8 @@ def expression_symbols(node):
     elif node_type == ast.BinOp:
         return expression_symbols(node.left) + expression_symbols(node.right)
     else:
-        raise ValueError("Unsupported node type: {}".format(node_type))
+        raise ValueError("Unsupported node type: {}. Statement: {}"
+                         .format(node_type, ast.dump(node)))
     
 
 def assignment_symbols(node):
