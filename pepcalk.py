@@ -3,6 +3,7 @@
 TODO: booleans, complex numbers.
 
 Applications:
+    - Btw bonnetjes.
     - Compact calendar
     - Signal processing
     - Dagobert
@@ -20,23 +21,6 @@ from pepcalk.absynt import get_statements_from_code
 
 import logging
 logger = logging.getLogger(__name__)
-
-    
-def parse_assign_statement(statement):
-    """ Parses an assign statement and returns tuple of inputs and a tuple of outputs
-    """
-    check_class(statement, ast.Assign)
-
-    # Targets can have more than one element. E.g. when the statement is: a = b = 6
-    # This is not supported (at the moment)
-    if len(statement.targets) != 1:
-        raise ValueError("Targets should be of length 1. Got: {}".format(len(statement.targets)))
-    
-    target = statement.targets[0]
-    if not isinstance(target.ctx, ast.Store):
-        raise ValueError("Target.ctx should be store. Got: {}".format(target.ctx))
-    
-    return target.id
 
     
     
