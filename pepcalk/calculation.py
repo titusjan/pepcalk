@@ -1,5 +1,5 @@
 
-from pepcalk.absynt import ast_to_str, get_statements_from_code, assignment_symbols, parse_simple_assignment
+from pepcalk.absynt import ast_to_str, get_statements_from_code, expression_symbols, parse_simple_assignment
 from pepcalk.graph import Node, Graph
 
 class Calculation(object):
@@ -46,26 +46,24 @@ class Calculation(object):
             return graph.add(Node(symbol))
         
             
-    def _get_symbol_graph(self, statements):
+    def _get_symbol_graph(self, assignments):
         
         graph = Graph()
-        for stat in statements:
-            lhs_symbols, rhs_symbols = assignment_symbols(stat)
-            for lhs_sym in lhs_symbols:
-                lhs_node = self._get_or_add_node(graph, lhs_sym)
-                for rhs_sym in rhs_symbols:
-                    rhs_node = self._get_or_add_node(graph, rhs_sym)
-                    lhs_node.connect(rhs_node)
+        for target, expression in assignments.iteritems():
+            expr_symbols = expression_symbols(expression)
+            target_node = self._get_or_add_node(graph, target)
+            for expr_sym in expr_symbols:
+                expr_node = self._get_or_add_node(graph, expr_sym)
+                target_node.connect(expr_node)
         return graph
 
 
     def _order_assignments(self, assignments):
         """ Analyses the dependencies in the assignments and returns a list of targets
         """
-        statements = get_statements_from_code(self._code) # TODO
-        graph = self._get_symbol_graph(statements)
+        graph = self._get_symbol_graph(self._assignments)
         result = [node.id for node in graph.linearize()]
-        assert len(result) == len(statements), "sanity check"
+        assert len(result) == len(self._assignments), "sanity check"
         return result
         
         
