@@ -3,7 +3,8 @@
 
 from __future__ import absolute_import
 import unittest
-
+from pepcalk.absynt import CompilationError
+from pepcalk.calculation import Calculation
 
 
 class Case(unittest.TestCase):
@@ -16,16 +17,36 @@ class Case(unittest.TestCase):
         pass
 
 
-    def test_get_statement_from_code(self):
+    def test_execute(self):
         
-        code = """ 
-b = a * 2
-a = 4 
-        """
+        # Empty program
+        result = Calculation("").execute()
+        self.assertEqual(result, {})
         
-        self.assertRaises(ValueError, gsfc, "a = 6; b = 7")
-        self.assertRaises(SyntaxError, gsfc, "a = (")
-
+        # Regular case
+        result = Calculation("b = a * 2; a = 4" ).execute()
+        self.assertEqual(result['a'], 4)
+        self.assertEqual(result['b'], 8)
+        
+        # Undefined variable
+        calc = Calculation("b = a * 2; a = c" )
+        self.assertRaises(CompilationError, calc.compile)
+        
+        # Circular dependency
+        calc = Calculation("a = a / 2" )
+        self.assertRaises(CompilationError, calc.compile)
+        
+        # Non assignments
+        self.assertRaises(CompilationError, Calculation, "print a" )
+        self.assertRaises(CompilationError, Calculation, "6 + 4" )
+        
+        # Target used twice
+        self.assertRaises(CompilationError, Calculation, "a = 5; a = 2" )
+        
+        # Syntax error
+        self.assertRaises(SyntaxError, Calculation, "a = 5ttt" )
+        
+        
+        
 if __name__ == '__main__':
     unittest.main()
- 

@@ -10,6 +10,11 @@ import ast
 from pepcalk.utils import check_class
 
 
+class CompilationError(StandardError):
+    """ Raised when the calculation cannot be compiled."""
+    pass
+
+
 def get_statements_from_code(code):
     """ Compiles the code string in 'exec' mode.
         Verifies it consists of a list of statements and returns this list.
@@ -28,8 +33,8 @@ def get_statement_from_code(code):
     # In single mode the body can still consist of multiple statements
     # if they are separated by a semicolon. We don't support this.
     if len(module.body) != 1:
-        raise ValueError("Body should consist of one statement. Got: {}".
-                         format(len(module.body)))
+        raise CompilationError("Body should consist of one statement. Got: {}".
+                               format(len(module.body)))
     return module.body[0]
 
 
@@ -76,11 +81,13 @@ def ast_to_str(node):
         # Targets can have more than one element. E.g. when the statement is: a = b = 6
         # This is not supported (at the moment)
         if len(node.targets) != 1:
-            raise ValueError("Targets should be of length 1. Got: {}".format(len(node.targets)))
+            raise CompilationError("Targets should be of length 1. Got: {}"
+                                   .format(len(node.targets)))
         
         target = node.targets[0]
         if not isinstance(target, ast.Name):
-            raise ValueError("Target should be a Name node. Got: {}".format(target.ctx))
+            raise CompilationError("Target should be a Name node. Got: {}"
+                                   .format(target.ctx))
         
         if not isinstance(target.ctx, ast.Store): # sanity check 
             raise AssertionError("Target.ctx should be store. Got: {}".format(target.ctx))
@@ -88,7 +95,7 @@ def ast_to_str(node):
         return "{} = {}".format(target.id, ast_to_str(node.value))
     
     else:
-        raise ValueError("Unsupported node type: {}".format(node_type))
+        raise CompilationError("Unsupported node type: {}".format(node_type))
     
 
 def wrap_expression(expr):
@@ -120,8 +127,8 @@ def expression_symbols(node):
     elif node_type == ast.BinOp:
         return expression_symbols(node.left) + expression_symbols(node.right)
     else:
-        raise ValueError("Unsupported node type: {}. Statement: {}"
-                         .format(node_type, ast.dump(node)))
+        raise CompilationError("Unsupported node type: {}. Statement: {}"
+                               .format(node_type, ast.dump(node)))
     
 
 def assignment_symbols(node):
@@ -135,7 +142,8 @@ def assignment_symbols(node):
 def parse_simple_assignment(node):
     """ Returns (lhs_name, expression) tuple.
     
-        Raises a ValueError if the node is not an assignment that assigns to a single variable.
+        Raises a CompilationError if the node is not an assignment that assigns to a 
+        single variable.
     """
     check_class(node, ast.AST)
     node_type = type(node)
@@ -144,7 +152,8 @@ def parse_simple_assignment(node):
         # Targets can have more than one element. E.g. when the statement is: a = b = 6
         # This is not supported (at the moment)
         if len(node.targets) != 1:
-            raise ValueError("Targets should be of length 1. Got: {}".format(len(node.targets)))
+            raise CompilationError("Targets should be of length 1. Got: {}"
+                                   .format(len(node.targets)))
         
         target = node.targets[0]
         if not isinstance(target.ctx, ast.Store): # sanity check
@@ -152,7 +161,7 @@ def parse_simple_assignment(node):
         
         return (target, node.value)
     else:
-        raise ValueError("Unsupported node type: {}".format(node_type))
+        raise CompilationError("Unsupported node type: {}".format(node_type))
         
     
 if __name__ == "__main__":

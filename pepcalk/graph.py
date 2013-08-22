@@ -116,7 +116,7 @@ class Graph(object):
                 Marks nodes to prevent duplicates.
             """
             if node in temp_marked_nodes:
-                raise ValueError("Cycle detected in graph.")
+                raise ValueError("Circular dependency found for ({})".format(node.id))
             
             if node not in perm_marked_nodes: 
                 

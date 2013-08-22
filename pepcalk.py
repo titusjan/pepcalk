@@ -51,7 +51,7 @@ c = b+a
         view(source_code = "a+b", mode="single", width=800, height=600)
     else:
         calc = Calculation(code)
-        print calc.export_to_code()
+        print calc.get_source_code()
         print ""
         result = calc.execute()
         for name, value in sorted(result.iteritems()):
