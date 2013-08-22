@@ -164,21 +164,3 @@ def parse_simple_assignment(node):
         raise CompilationError("Unsupported node type: {}".format(node_type))
         
     
-if __name__ == "__main__":
-    
-    #print ast_to_str(get_statement_from_code("a = True"))
-    #print ast_to_str(get_statement_from_code(r"a = 'escaped \" quote'"))
-    #print assignment_symbols(get_statement_from_code("a = a + b"))
-    globals = {}
-    locals = {}
-    code = compile("a = 4.2; b = a+3", '<string>', 'exec')
-    exec (code, globals, locals)
-    print globals.keys()
-    print locals
-    
-    code = compile("b = b+5", '<string>', 'exec')
-    exec (code, globals, locals)
-    print globals.keys()
-    print locals
-    
-        

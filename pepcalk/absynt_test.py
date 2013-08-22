@@ -4,7 +4,7 @@
 from __future__ import absolute_import
 import unittest
 
-
+from pepcalk.absynt import CompilationError
 from pepcalk.absynt import ast_to_str as a2s
 from pepcalk.absynt import get_statement_from_code as gsfc
 from pepcalk.absynt import expression_symbols as exprsym
@@ -23,7 +23,7 @@ class AbsyntCase(unittest.TestCase):
 
     def test_get_statement_from_code(self):
         
-        self.assertRaises(ValueError, gsfc, "a = 6; b = 7")
+        self.assertRaises(CompilationError, gsfc, "a = 6; b = 7")
         self.assertRaises(SyntaxError, gsfc, "a = (")
         
 
@@ -43,10 +43,10 @@ class AbsyntCase(unittest.TestCase):
         self.assertEqual(a2s(gsfc(r"a = 'escaped \" quote'")), "a = 'escaped \" quote'")
 
         # Unsupported functionality
-        self.assertRaises(ValueError, a2s, gsfc("a = b = 7"))
-        self.assertRaises(ValueError, a2s, gsfc("a, b = (2, 3)"))
-        self.assertRaises(ValueError, a2s, gsfc("a = dir()"))
-        self.assertRaises(ValueError, a2s, gsfc("a = True and False"))
+        self.assertRaises(CompilationError, a2s, gsfc("a = b = 7"))
+        self.assertRaises(CompilationError, a2s, gsfc("a, b = (2, 3)"))
+        self.assertRaises(CompilationError, a2s, gsfc("a = dir()"))
+        self.assertRaises(CompilationError, a2s, gsfc("a = True and False"))
         
         
     def test_expression_symbols(self):
@@ -65,9 +65,8 @@ class AbsyntCase(unittest.TestCase):
         
         # Wrong type 
         self.assertRaises(TypeError, a2s, 55)              # Not a syntax tree
-        self.assertRaises(ValueError, a2s, gsfc("a == b"))      # expression
+        self.assertRaises(CompilationError, a2s, gsfc("a == b"))      # expression
         
 
 if __name__ == '__main__':
     unittest.main()
- 
