@@ -90,6 +90,14 @@ def ast_to_str(node):
     else:
         raise ValueError("Unsupported node type: {}".format(node_type))
     
+
+def wrap_expression(expr):
+    """ Wraps an ast.expr node into an ast.Expression node, which can be used by compile()
+    """
+    check_class(expr, ast.expr)
+    expression = ast.Expression()
+    expression.body = expr
+    return expression    
     
 
 # TODO: use symbtable module?

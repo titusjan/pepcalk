@@ -1,6 +1,10 @@
 
-from pepcalk.absynt import ast_to_str, get_statements_from_code, expression_symbols, parse_simple_assignment
+import logging
+from pepcalk.absynt import (ast_to_str, get_statements_from_code, wrap_expression, 
+                            expression_symbols, parse_simple_assignment)
 from pepcalk.graph import Node, Graph
+
+logger = logging.getLogger(__name__)
 
 class Calculation(object):
 
@@ -68,7 +72,34 @@ class Calculation(object):
         
         
     def execute(self):
+        global_vars = {}
+        local_vars = {}
+        for name in self._order:
+            expr = self._assignments[name]
+            logger.debug("compiling: {} = {}".format(name, ast_to_str(expr)))
+            compiled_expr = compile(wrap_expression(expr), "<string>", "eval")
+            local_vars[name] = eval(compiled_expr, global_vars, local_vars)
+
+        return local_vars
         
-        pass
-        
-        
+def main():
+    import ast
+    from objbrowser import browse
+    
+    my_expr = ast.parse("6+7", "<string>", "eval")
+    
+    #browse(my_expr, obj_name = 'my_expr', show_root_node = True, show_special_methods = False)
+    
+    source_code = "6 + 12"
+    statements = get_statements_from_code(source_code)
+    expression = ast.Expression()
+    expression.body = statements[0].value
+    #browse(locals(), show_special_methods = False)
+    
+    compiled_expression = compile(expression, '<string>', mode="eval")
+    #browse(statements, obj_name = 'statements', show_root_node = True, show_special_methods = False)
+    #print ast_to_str(expr)
+    print eval(compiled_expression)
+ 
+if __name__ == '__main__':
+    main()

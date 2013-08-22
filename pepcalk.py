@@ -52,7 +52,11 @@ c = b+a
     else:
         calc = Calculation(code)
         print calc.export_to_code()
-        print 
+        print ""
+        result = calc.execute()
+        for name, value in sorted(result.iteritems()):
+            print "{} = {}".format(name, value)
+        
         
         #browse(graph, obj_name="graph", show_root_node=True, show_special_methods = False)
         
