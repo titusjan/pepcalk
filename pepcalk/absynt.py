@@ -120,6 +120,15 @@ def assignment_symbols(node):
     """ Returns (lsymbols, rsymbols) tuple, where lsymbols and rsymbols are the lists of
         symbols used left and right of the assignment operator.
     """
+    lhs_name, expression = parse_simple_assignment(node)
+    return expression_symbols(lhs_name), expression_symbols(expression)
+
+
+def parse_simple_assignment(node):
+    """ Returns (lhs_name, expression) tuple.
+    
+        Raises a ValueError if the node is not an assignment that assigns to a single variable.
+    """
     check_class(node, ast.AST)
     node_type = type(node)
     
@@ -133,10 +142,10 @@ def assignment_symbols(node):
         if not isinstance(target.ctx, ast.Store): # sanity check
             raise AssertionError("Target.ctx should be store. Got: {}".format(target.ctx))
         
-        return (expression_symbols(target), expression_symbols(node.value))
+        return (target, node.value)
     else:
         raise ValueError("Unsupported node type: {}".format(node_type))
-    
+        
     
 if __name__ == "__main__":
     
