@@ -6,7 +6,7 @@ import sys, logging, traceback
 
 from PySide import QtCore, QtGui
 
-from pepcalk.absynt import ast_to_str
+from pepcalk.calctablemodel import CalcTableModel
 from pepcalk.calculation import Calculation
 from pepcalk.utils import check_class, class_name
 
@@ -19,30 +19,6 @@ PROGRAM_VERSION = '0.0.1'
 ABOUT_MESSAGE = u"""%(prog)s version %(version)s
 """ % {"prog": PROGRAM_NAME, "version": PROGRAM_VERSION}
 
-# Tree column indices
-COL_TARGET = 0
-COL_SOURCE = 1
-COL_VALUE = 2
-COL_TYPE = 3
-COL_ORDER = 4
-N_COLS = 5
-
-DEFAULT_COL_WIDTH = 150
-
-# ColumnSettings is an simple settings object
-# pylint: disable=R0903    
-class ColumnSettings(object):
-    """ Class that stores INITIAL column settings. """
-    
-    def __init__(self, width=DEFAULT_COL_WIDTH, visible=True, name=None):
-        """ Constructor to set mandatory and default settings) """
-        self.name = name
-        self.visible = visible
-        self.width = width
-        self.toggle_action = None  # action to show/hide column
-        self.toggle_function = None # function that shows/hides column
-# pylint: enable=R0903    
-        
 
 
 def get_qapplication_instance():
@@ -68,6 +44,24 @@ def start(*args, **kwargs):
     logger.info("PepCalk done...")
     return exit_code
 
+# Tree column indices
+
+
+DEFAULT_COL_WIDTH = 150
+
+# ColumnSettings is an simple settings object
+# pylint: disable=R0903    
+class ColumnSettings(object):
+    """ Class that stores INITIAL column settings. """
+    
+    def __init__(self, width=DEFAULT_COL_WIDTH, visible=True, name=None):
+        """ Constructor to set mandatory and default settings) """
+        self.name = name
+        self.visible = visible
+        self.width = width
+        self.toggle_action = None  # action to show/hide column
+        self.toggle_function = None # function that shows/hides column
+# pylint: enable=R0903    
 
 # The main window inherits from a Qt class, therefore it has many 
 # ancestors public methods and attributes.
@@ -85,16 +79,18 @@ class MainWindow(QtGui.QMainWindow):
         
         # Models
         self._calculation = Calculation(source_code)
-        self._source_code = source_code
+        self._table_model = CalcTableModel(self._calculation)
     
         # Table columns
-        self.col_settings = [None] * N_COLS
-        self.col_settings[COL_TARGET] = ColumnSettings(name = 'target', visible=True,  width=100)
-        self.col_settings[COL_SOURCE] = ColumnSettings(name = 'source', visible=True)
-        self.col_settings[COL_VALUE]  = ColumnSettings(name = 'value', visible=True)
-        self.col_settings[COL_TYPE]   = ColumnSettings(name = 'type', visible=False)
-        self.col_settings[COL_ORDER]  = ColumnSettings(name = 'order', visible=False)
-        
+        self.col_settings = [None] * CalcTableModel.N_COLS
+        self.col_settings[CalcTableModel.COL_ORDER]  = ColumnSettings(visible=True, width=50)
+        self.col_settings[CalcTableModel.COL_TARGET] = ColumnSettings(visible=True, width=50)
+        self.col_settings[CalcTableModel.COL_SOURCE] = ColumnSettings(visible=True)
+        self.col_settings[CalcTableModel.COL_VALUE]  = ColumnSettings(visible=True)
+        self.col_settings[CalcTableModel.COL_TYPE]   = ColumnSettings(visible=True)
+        for idx, header in enumerate(CalcTableModel.HEADERS):
+            self.col_settings[idx].name = header
+            
         # Views
         self._setup_actions()
         self._setup_menu()
@@ -102,7 +98,8 @@ class MainWindow(QtGui.QMainWindow):
         self.setWindowTitle('{}'.format(PROGRAM_NAME))
         
         # Update views
-        self._fill_calc_table()
+        for settings in self.col_settings:
+            settings.toggle_action.setChecked(settings.visible)
         
         if width and height:
             self.resize(width, height)
@@ -158,11 +155,10 @@ class MainWindow(QtGui.QMainWindow):
         central_splitter.setLayout(central_layout)
         
         # Table widget
-        self.calc_table = QtGui.QTableWidget()
-        self.calc_table.setColumnCount(N_COLS)
+        self.calc_table = QtGui.QTableView()
+        self.calc_table.setModel(self._table_model)
         
-        self.calc_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.calc_table.setHorizontalHeaderLabels([col.name for col in self.col_settings])
+        #self.calc_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         for idx, settings in enumerate(self.col_settings):
             self.calc_table.setColumnWidth(idx, settings.width)
         central_layout.addWidget(self.calc_table)
@@ -194,7 +190,6 @@ class MainWindow(QtGui.QMainWindow):
     def new_file(self):
         """ Clears the widgets """
         self._calculation = Calculation()
-        self._source_code = ""
         self.editor.clear()
         self._fill_calc_table()
         
@@ -223,7 +218,7 @@ class MainWindow(QtGui.QMainWindow):
             self._load_file(file_name)
             
         self.setWindowTitle('{} - {}'.format(PROGRAM_NAME, self._file_name))
-        self.editor.setPlainText(self._source_code)
+        #self.editor.setPlainText(self._source_code)
         
         try:
             self._fill_calc_table()
@@ -241,6 +236,7 @@ class MainWindow(QtGui.QMainWindow):
     def _load_file(self, file_name):
         """ Opens a file and sets self._file_name and self._source code if succesful
         """
+        assert False, "not yet implemented"
         logger.debug("Opening {!r}".format(file_name))
         
         in_file = QtCore.QFile(file_name)
@@ -252,39 +248,17 @@ class MainWindow(QtGui.QMainWindow):
                 source_code = str(text)                    # Python 2
                 
             self._file_name = file_name
-            self._source_code = source_code
+            #self._source_code = source_code
             
         else:
             msg = "Unable to open file: {}".format(file_name)
             logger.warn(msg)
             QtGui.QMessageBox.warning(self, 'error', msg)
             
-   
-    
-    def _fill_calc_table(self):
-        """ Populates the calculation table.
-        """
-        self.calc_table.clearContents()    
-        self.calc_table.setColumnCount(N_COLS)
-        self.calc_table.setRowCount(len(self._calculation.assignments))
-        row = 0
-        for assignment in self._calculation.assignments:
-            logger.debug("Filling row {}: {}".format(row, assignment))
-            self.calc_table.setItem(row, COL_TARGET, 
-                                    QtGui.QTableWidgetItem(assignment.target))
-            self.calc_table.setItem(row, COL_SOURCE,   
-                                    QtGui.QTableWidgetItem(assignment.source))
-            self.calc_table.setItem(row, COL_VALUE,   
-                                    QtGui.QTableWidgetItem(assignment.value))
-            self.calc_table.setItem(row, COL_TYPE,   
-                                    QtGui.QTableWidgetItem(class_name(assignment.value)))
-            row += 1
-            
- 
 
     def _make_show_column_function(self, column_idx):
         """ Creates a function that shows or hides a column."""
-        show_column = lambda checked: self.obj_tree.setColumnHidden(column_idx, not checked)
+        show_column = lambda checked: self.calc_table.setColumnHidden(column_idx, not checked)
         return show_column
     
     

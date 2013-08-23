@@ -73,10 +73,14 @@ class Assignment(object):
 class Calculation(object):
 
     def __init__(self, code = ""):
-        "constructor"
+        "Constructor"
         self._assignments = []
         self.import_from_source_code(code)
-    
+
+    def __len__(self):
+        "Number of assignment in the calculation"
+        return len(self._assignments)
+        
     @property        
     def assignments(self):
         return self._assignments
