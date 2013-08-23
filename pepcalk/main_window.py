@@ -12,7 +12,7 @@ from pepcalk.utils import check_class, class_name
 
 logger = logging.getLogger(__name__)
 
-DEBUGGING = False
+DEBUGGING = True
 
 PROGRAM_NAME = 'PepCalk'
 PROGRAM_VERSION = '0.0.1'
@@ -79,8 +79,9 @@ class MainWindow(QtGui.QMainWindow):
         
         # Models
         self._calculation = Calculation(source_code)
+        self._calculation.execute()
         self._table_model = CalcTableModel(self._calculation)
-    
+        
         # Table columns
         self.col_settings = [None] * CalcTableModel.N_COLS
         self.col_settings[CalcTableModel.COL_ORDER]  = ColumnSettings(visible=True, width=50)
@@ -264,7 +265,7 @@ class MainWindow(QtGui.QMainWindow):
     
     def my_test(self):
         """ Function for testing """
-        pass
+        logger.info("my_test")
 
     def about(self):
         """ Shows the about message window. """

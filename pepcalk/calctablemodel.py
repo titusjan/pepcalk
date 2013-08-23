@@ -45,14 +45,16 @@ class CalcTableModel(QtCore.QAbstractTableModel):
         
         if role == QtCore.Qt.DisplayRole:
             assignment = self._calculation.assignments[row]
-            if col == self.COL_TARGET:
+            if col == self.COL_ORDER:
+                return str(assignment.order)
+            elif col == self.COL_TARGET:
                 return assignment.target
             elif col == self.COL_SOURCE:
                 return assignment.source
             elif col == self.COL_VALUE:
                 return assignment.value
             elif col == self.COL_TYPE:
-                class_name(assignment.value)
+                return class_name(assignment.value)
             else:
                 return None
 
