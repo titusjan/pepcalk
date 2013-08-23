@@ -8,7 +8,7 @@ from PySide import QtCore, QtGui
 
 from pepcalk.absynt import ast_to_str
 from pepcalk.calculation import Calculation
-from pepcalk.utils import check_class
+from pepcalk.utils import check_class, class_name
 
 logger = logging.getLogger(__name__)
 
@@ -21,10 +21,10 @@ ABOUT_MESSAGE = u"""%(prog)s version %(version)s
 
 # Tree column indices
 COL_TARGET = 0
-COL_CODE = 1
-COL_PARSED = 2
-COL_VALUE = 3
-COL_TYPE = 4
+COL_SOURCE = 1
+COL_VALUE = 2
+COL_TYPE = 3
+COL_ORDER = 4
 N_COLS = 5
 
 DEFAULT_COL_WIDTH = 150
@@ -90,10 +90,10 @@ class MainWindow(QtGui.QMainWindow):
         # Table columns
         self.col_settings = [None] * N_COLS
         self.col_settings[COL_TARGET] = ColumnSettings(name = 'target', visible=True,  width=100)
-        self.col_settings[COL_CODE]   = ColumnSettings(name = 'code', visible=True)
-        self.col_settings[COL_PARSED] = ColumnSettings(name = 'parsed', visible=True)
+        self.col_settings[COL_SOURCE] = ColumnSettings(name = 'source', visible=True)
         self.col_settings[COL_VALUE]  = ColumnSettings(name = 'value', visible=True)
         self.col_settings[COL_TYPE]   = ColumnSettings(name = 'type', visible=False)
+        self.col_settings[COL_ORDER]  = ColumnSettings(name = 'order', visible=False)
         
         # Views
         self._setup_actions()
@@ -268,12 +268,16 @@ class MainWindow(QtGui.QMainWindow):
         self.calc_table.setColumnCount(N_COLS)
         self.calc_table.setRowCount(len(self._calculation.assignments))
         row = 0
-        for target, expr in self._calculation.assignments.iteritems():
-            logger.debug("Filling row {}: {}".format(row, target))
+        for assignment in self._calculation.assignments:
+            logger.debug("Filling row {}: {}".format(row, assignment))
             self.calc_table.setItem(row, COL_TARGET, 
-                                    QtGui.QTableWidgetItem(target))
-            self.calc_table.setItem(row, COL_CODE,   
-                                    QtGui.QTableWidgetItem(ast_to_str(expr)))
+                                    QtGui.QTableWidgetItem(assignment.target))
+            self.calc_table.setItem(row, COL_SOURCE,   
+                                    QtGui.QTableWidgetItem(assignment.source))
+            self.calc_table.setItem(row, COL_VALUE,   
+                                    QtGui.QTableWidgetItem(assignment.value))
+            self.calc_table.setItem(row, COL_TYPE,   
+                                    QtGui.QTableWidgetItem(class_name(assignment.value)))
             row += 1
             
  

@@ -41,7 +41,8 @@ class Case(unittest.TestCase):
         self.assertRaises(CompilationError, Calculation, "6 + 4" )
         
         # Target used twice
-        self.assertRaises(CompilationError, Calculation, "a = 5; a = 2" )
+        calc = Calculation("a = 5; a = 2")
+        self.assertRaises(CompilationError, calc.compile)
         
         # Syntax error
         self.assertRaises(SyntaxError, Calculation, "a = 5ttt" )

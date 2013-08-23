@@ -9,6 +9,11 @@ def logging_basic_config(level):
     fmt = '%(filename)20s:%(lineno)-4d : %(levelname)-7s: %(message)s'
     logging.basicConfig(level=level, format=fmt)
 
+
+def class_name(obj):
+    """ Returns the class name of an object"""
+    return obj.__class__.__name__
+
     
 def check_class(obj, target_class, allow_none = False):
     """ Checks that the  obj is a (sub)type of target_class. 
