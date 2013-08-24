@@ -6,9 +6,10 @@ import sys, logging, traceback
 
 from PySide import QtCore, QtGui
 
+from pepcalk.assignmentdelegate import AssignmentDelegate
 from pepcalk.calctablemodel import CalcTableModel
 from pepcalk.calculation import Calculation
-from pepcalk.utils import check_class, class_name
+from pepcalk.utils import check_class
 
 logger = logging.getLogger(__name__)
 
@@ -159,6 +160,10 @@ class MainWindow(QtGui.QMainWindow):
         # Table widget
         self.calc_table = QtGui.QTableView()
         self.calc_table.setModel(self._table_model)
+        self.calc_table.setItemDelegate(AssignmentDelegate())
+        self.calc_table.setEditTriggers(QtGui.QAbstractItemView.DoubleClicked | 
+                                        QtGui.QAbstractItemView.AnyKeyPressed | 
+                                        QtGui.QAbstractItemView.SelectedClicked)
         
         #self.calc_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         for idx, settings in enumerate(self.col_settings):

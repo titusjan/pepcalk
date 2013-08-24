@@ -47,6 +47,7 @@ class Case(unittest.TestCase):
         # Syntax error
         self.assertRaises(SyntaxError, Calculation, "a = 5ttt" )
         
+        # TODO: test None  
         
         
 if __name__ == '__main__':

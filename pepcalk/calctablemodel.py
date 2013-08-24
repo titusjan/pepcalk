@@ -6,6 +6,8 @@ from pepcalk.utils import class_name
 
 logger = logging.getLogger(__name__)
 
+
+
 class CalcTableModel(QtCore.QAbstractTableModel):
     """"The modal class for the table vis widget
     
@@ -33,7 +35,7 @@ class CalcTableModel(QtCore.QAbstractTableModel):
 
 
     def data(self, index,  role = QtCore.Qt.DisplayRole):
-        """reimplementation of data method from QAbstractTableModel
+        """ Gets the data at a row and column for a certain role.
         """
         if not index.isValid():
             return None
@@ -44,7 +46,7 @@ class CalcTableModel(QtCore.QAbstractTableModel):
         if (row < 0 or row >= len(self._calculation)): 
             return None
         
-        if role == QtCore.Qt.DisplayRole:
+        if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
             assignment = self._calculation.assignments[row]
             if col == self.COL_ORDER:
                 return str(assignment.order_str)
