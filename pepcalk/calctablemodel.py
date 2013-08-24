@@ -1,7 +1,10 @@
 """ TableWidgetModel Class."""
-from PySide import QtCore
-
+import logging
+from PySide import QtCore 
+from PySide.QtCore import Qt
 from pepcalk.utils import class_name
+
+logger = logging.getLogger(__name__)
 
 class CalcTableModel(QtCore.QAbstractTableModel):
     """"The modal class for the table vis widget
@@ -26,9 +29,7 @@ class CalcTableModel(QtCore.QAbstractTableModel):
         """Init method
         """
         super(CalcTableModel, self).__init__(parent)
-        
         self._calculation = calculation
-
 
 
     def data(self, index,  role = QtCore.Qt.DisplayRole):
@@ -46,7 +47,7 @@ class CalcTableModel(QtCore.QAbstractTableModel):
         if role == QtCore.Qt.DisplayRole:
             assignment = self._calculation.assignments[row]
             if col == self.COL_ORDER:
-                return str(assignment.order)
+                return str(assignment.order_str)
             elif col == self.COL_TARGET:
                 return assignment.target
             elif col == self.COL_SOURCE:
@@ -62,7 +63,11 @@ class CalcTableModel(QtCore.QAbstractTableModel):
     def flags(self, index):
         """ Set the item flags at the given index. 
         """
-        return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+        col = index.column()
+        if col == self.COL_TARGET or col == self.COL_SOURCE:
+            return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
+        else:
+            return Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
 
     def headerData(self, section, orientation, role):
@@ -81,7 +86,38 @@ class CalcTableModel(QtCore.QAbstractTableModel):
 
     def columnCount(self, _parent):
         " Number of columns"
-        
         return self.N_COLS
     
     
+    def setData(self, index, value, role=Qt.EditRole):
+        """ Sets the role data for the item at index to value.
+
+            Returns True if successful; otherwise returns False
+        """
+        if not (role == Qt.EditRole and
+                index.isValid() and 
+                (0 <= index.row() < len(self._calculation))):
+            return False
+        
+        assignment = self._calculation.assignments[index.row()]
+        if index.column() == self.COL_TARGET:
+            logger.debug("setData target row = {}".format(index.row()))
+            assignment.init_from_code("{} = {}".format(value, assignment.source))
+        elif index.column() == self.COL_SOURCE:
+            logger.debug("setData source row = {}".format(index.row()))
+            assignment.init_from_code("{} = {}".format(assignment.target, value))
+        else:
+            return False
+
+        self._calculation.execute()
+        self.emitAllDataChanged()
+        return True
+        
+        
+    def emitAllDataChanged(self):
+        """ Emits the dataChanged signal for the complete table
+        """
+        top_left_index = self.index(0, 0)
+        bottom_right_index = self.index(len(self._calculation) - 1, self.N_COLS - 1)
+        self.dataChanged.emit(top_left_index, bottom_right_index) 
+

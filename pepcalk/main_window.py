@@ -266,6 +266,10 @@ class MainWindow(QtGui.QMainWindow):
     def my_test(self):
         """ Function for testing """
         logger.info("my_test")
+        #self._calculation.execute()
+        #self._table_model.emitAllDataChanged()
+        print self._calculation.summary()
+        
 
     def about(self):
         """ Shows the about message window. """

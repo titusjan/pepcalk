@@ -14,7 +14,7 @@ def assignment_order(assignment):
 class Assignment(object):
     """ The assignments in the calculation
     """
-    def __init__(self, init=None, order = None):
+    def __init__(self, init = None, order = None):
         
         self._target = None
         self._expression = None
@@ -47,6 +47,14 @@ class Assignment(object):
     @property
     def compiled_expression(self):
         return self._compiled_expr
+    
+    @property
+    def order_str(self):
+        " The order as a string "
+        if self.order is None:
+            return ""
+        else:
+            return "{:2d}".format(self.order)
 
 
     def init_from_code(self, code_line):
@@ -61,10 +69,12 @@ class Assignment(object):
         """
         lhs_symbol, self._expression = parse_simple_assignment(statement_node)
         self._target = lhs_symbol.id
+        self._compiled_expr = None
+        self.value = None
 
 
     def compile(self):
-        """ Compiles the assignment
+        """ Compiles the expression
         """
         self._compiled_expr = compile(wrap_expression(self.expression), 
                                       "<string>", "eval")
@@ -84,7 +94,17 @@ class Calculation(object):
     @property        
     def assignments(self):
         return self._assignments
-
+    
+    
+    def summary(self):
+        """ Returns a multiline summary string
+        """
+        strings = []
+        for asgn in self._assignments:
+            strings.append("{}: value = {:5}; {} "
+                           .format(asgn.order_str, asgn.value, str(asgn), ))
+        return "\n".join(strings)
+    
             
     def import_from_source_code(self, code):
         """ Sets the code of the
@@ -97,9 +117,6 @@ class Calculation(object):
     def export_to_source_code(self):
         """ Compiles the assignments if necessary and returns it as Python statements.
         """
-        if not self.is_compiled:
-            self.compile()
-            
         return '\n'.join([str(assign) for assign in self.assignments])
 
             
