@@ -55,7 +55,10 @@ class CalcTableModel(QtCore.QAbstractTableModel):
             elif col == self.COL_VALUE:
                 return assignment.value
             elif col == self.COL_TYPE:
-                return class_name(assignment.value)
+                if assignment.value is None:
+                    return ""
+                else:
+                    return class_name(assignment.value)
             else:
                 return None
 
@@ -109,6 +112,7 @@ class CalcTableModel(QtCore.QAbstractTableModel):
         else:
             return False
 
+        self._calculation.compile()
         self._calculation.execute()
         self.emitAllDataChanged()
         return True

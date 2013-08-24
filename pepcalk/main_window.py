@@ -79,6 +79,7 @@ class MainWindow(QtGui.QMainWindow):
         
         # Models
         self._calculation = Calculation(source_code)
+        self._calculation.compile()
         self._calculation.execute()
         self._table_model = CalcTableModel(self._calculation)
         

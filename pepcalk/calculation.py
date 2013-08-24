@@ -57,6 +57,14 @@ class Assignment(object):
             return "{:2d}".format(self.order)
 
 
+    def reset(self):
+        """ Sets order, value and compiled_expr to None
+        """
+        self.order = None
+        self._compiled_expr = None
+        self.value = None
+        
+
     def init_from_code(self, code_line):
         """ Initialize an assignment from a string in the form of: target = source
         """
@@ -67,10 +75,10 @@ class Assignment(object):
     def init_from_ast(self, statement_node):
         """ Initialize an assignment from an ast.Assign object
         """
-        lhs_symbol, self._expression = parse_simple_assignment(statement_node)
+        lhs_symbol, expr = parse_simple_assignment(statement_node)
+        self.reset()
+        self._expression = expr
         self._target = lhs_symbol.id
-        self._compiled_expr = None
-        self.value = None
 
 
     def compile(self):
@@ -96,6 +104,13 @@ class Calculation(object):
         return self._assignments
     
     
+    def reset(self):
+        """ Resets all assignments
+        """
+        for assignment in self.assignments:
+            assignment.reset()
+            
+            
     def summary(self):
         """ Returns a multiline summary string
         """
@@ -109,9 +124,9 @@ class Calculation(object):
     def import_from_source_code(self, code):
         """ Sets the code of the
         """
-        self._code = code
+        self._assignments = []
         for stat in get_statements_from_code(code):
-            self.assignments.append(Assignment(stat))
+            self._assignments.append(Assignment(stat))
     
         
     def export_to_source_code(self):
@@ -174,15 +189,20 @@ class Calculation(object):
     def compile(self):
         """ Compiles and orders the assignments
         """
+        self.reset()
         self._sort_assignments()
         for assignment in self.assignments:
             assignment.compile()
             
         
     def execute(self):
-        """ Executes the assignments. Returns dictionary with results
+        """ Executes the assignments. Returns dictionary with results.
+        
+            Pre: the calculation must be compiled first.
         """
-        self.compile()
+        for assignment in self.assignments:
+            if assignment.compiled_expression is None:
+                raise AssertionError("Pre: assignment is not compiled: {}".format(assignment))
             
         global_vars = {}
         local_vars = {}
