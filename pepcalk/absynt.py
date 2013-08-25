@@ -53,8 +53,10 @@ def ast_to_str(node):
     
     elif node_type == ast.UnaryOp:
         return ast_to_str(node.op) + ast_to_str(node.operand)
-    elif node_type == ast.USub:
-        return "-"
+    elif node_type == ast.Not:
+        return "not "
+    elif node_type == ast.UAdd:
+        return "+"
     elif node_type == ast.USub:
         return "-"
     
@@ -76,6 +78,14 @@ def ast_to_str(node):
         return "%"
     elif node_type == ast.Pow:
         return "**"
+    
+    elif node_type == ast.BoolOp:
+        op_str = " {} ".format(ast_to_str(node.op))
+        return '(' + op_str.join([ast_to_str(val) for val in node.values]) + ')'
+    elif node_type == ast.And:
+        return "and"    
+    elif node_type == ast.Or:
+        return "or"    
     
     elif node_type == ast.Assign:
         # Targets can have more than one element. E.g. when the statement is: a = b = 6
@@ -164,3 +174,13 @@ def parse_simple_assignment(node):
         raise CompilationError("Unsupported node type: {}".format(node_type))
         
     
+if __name__ == "__main__":
+    
+    from astviewer import view
+    
+    def main():
+        #stat = get_statement_from_code("b = True")
+        view(source_code = "b = None")
+
+if __name__ == "__main__":
+    main()    
