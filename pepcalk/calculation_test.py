@@ -28,6 +28,11 @@ class Case(unittest.TestCase):
         self.assertEqual(result['a'], 4)
         self.assertEqual(result['b'], 8)
         
+        # Support for from __future__ import division
+        result = Calculation("a = 5/2" ).compile().execute()
+        self.assertEqual(result['a'], 2.5)
+         
+        
         # Undefined variable
         calc = Calculation("b = a * 2; a = c" ).compile()
         self.assertRaises(NameError, calc.execute) # TODO: other Error?

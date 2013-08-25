@@ -1,3 +1,4 @@
+from __future__ import division
 
 import logging, ast
 from pepcalk.absynt import (CompilationError, ast_to_str, wrap_expression, 
@@ -241,6 +242,7 @@ class Calculation(object):
             if assignment.compiled_expression is None:
                 raise AssertionError("Pre: assignment is not compiled: {}".format(assignment))
             
+        # Make sure that "from __future__ import division" is at the top of this module
         global_vars = {}
         local_vars = {}
         for assignment in sorted(self.assignments, key=assignment_order):

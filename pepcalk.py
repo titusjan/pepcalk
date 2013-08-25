@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 TEST_PROGRAM = """
-b = 2*a
+b = 2/a
 a = 5
 c = b+a
 """
