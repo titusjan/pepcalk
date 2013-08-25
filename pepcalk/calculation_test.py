@@ -29,8 +29,8 @@ class Case(unittest.TestCase):
         self.assertEqual(result['b'], 8)
         
         # Undefined variable
-        calc = Calculation("b = a * 2; a = c" )
-        self.assertRaises(CompilationError, calc.compile)
+        calc = Calculation("b = a * 2; a = c" ).compile()
+        self.assertRaises(NameError, calc.execute) # TODO: other Error?
         
         # Circular dependency
         calc = Calculation("a = a / 2" )
@@ -47,8 +47,15 @@ class Case(unittest.TestCase):
         # Syntax error
         self.assertRaises(SyntaxError, Calculation, "a = 5ttt" )
         
-        # TODO: test None  
+        # Boolean
+        result = Calculation("b = True; a = not b; c = b or a" ).compile().execute()
+        self.assertEqual(result['a'], False)
+        self.assertEqual(result['b'], True)
+        self.assertEqual(result['c'], True)
         
+        # NoneTypes
+        result = Calculation("b = None" ).compile().execute()
+        self.assertEqual(result['b'], None)
         
 if __name__ == '__main__':
     unittest.main()

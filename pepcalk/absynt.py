@@ -136,6 +136,11 @@ def expression_symbols(node):
         return expression_symbols(node.operand)
     elif node_type == ast.BinOp:
         return expression_symbols(node.left) + expression_symbols(node.right)
+    elif node_type == ast.BoolOp:
+        result = []
+        for val in node.values:
+            result += expression_symbols(val)
+        return result
     else:
         raise CompilationError("Unsupported node type: {}. Statement: {}"
                                .format(node_type, ast.dump(node)))

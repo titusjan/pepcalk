@@ -196,14 +196,28 @@ class Calculation(object):
         
         lhs_symbols = [node.id for node in ordered_nodes]
 
-        all_symbols = set(lhs_symbols)
-        target_symbols = set([assign.target for assign in self.assignments])
-        if not target_symbols == all_symbols:
-            raise CompilationError("Undefined symbol(s): {}".
-                                   format(", ".join(all_symbols - target_symbols)))
-            
+        # Disabled this check. Built-in symbols (None, True, etc) do not need to be
+        # defined within the calculation.
+        #all_symbols = set(lhs_symbols)
+        #target_symbols = set([assign.target for assign in self.assignments])
+        #if not target_symbols == all_symbols:
+        #    raise CompilationError("Undefined symbol(s): {}".
+        #                           format(", ".join(all_symbols - target_symbols)))
+
+        # Set all orders to None.
+        for assignment in self.assignments:
+            assignment.order = None
+
+        # Add the order for all defined variables.              
+        # Undefined variables could be a built-in so are silently ignored.
         for order, lhs_sym in enumerate(lhs_symbols):
-            assignment_dict[lhs_sym].order = order
+            if lhs_sym in assignment_dict:
+                assignment_dict[lhs_sym].order = order
+                
+        # Sanity check: all assignments must have an order
+        for assignment in self.assignments:
+            if assignment.order is None:
+                raise AssertionError("Unordered assignment: {}".format(assignment))                
 
     
     def compile(self):
@@ -244,4 +258,3 @@ class Calculation(object):
         """
         self._assignments.sort(key = key, reverse = reverse)
         
-         

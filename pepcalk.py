@@ -5,6 +5,7 @@ TODO: booleans, complex numbers.
 Applications:
     - Btw bonnetjes.
     - Compact calendar
+    - Function viewers (sliders to tweak function parameters).
     - Signal processing
     - Dagobert
     - Measurement database
