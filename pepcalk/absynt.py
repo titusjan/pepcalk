@@ -85,7 +85,36 @@ def ast_to_str(node):
     elif node_type == ast.And:
         return "and"    
     elif node_type == ast.Or:
-        return "or"    
+        return "or"
+    
+    elif node_type == ast.Call:
+        
+        # Check for unsupported functionality: *args, **kwargs 
+        if node.starargs is not None:
+            raise CompilationError("*args not supported.")
+        if node.kwargs is not None:
+            raise CompilationError("**kwargs not supported.")
+        
+        # Check for unsupported functionality: functions be a named function
+        if not isinstance(node.func, ast.Name):
+            raise CompilationError("node.func should be a Name node. Got: {}"
+                                   .format(node.func))
+
+        if not isinstance(node.func.ctx, ast.Load): # sanity check 
+            raise AssertionError("node.func.ctx should be store. Got: {}".format(node.func.ctx))
+        
+        param_strings = []
+        for arg in node.args:
+            #print "node.arg: {!r}: (id={}) {}".format(arg, arg.id, ast_to_str(arg))
+            param_strings.append(ast_to_str(arg))
+        for keyword in node.keywords:
+            param_strings.append(ast_to_str(keyword))
+        #print param_strings
+        return "{}({})".format(node.func.id, ', '.join(param_strings))
+
+    elif node_type == ast.keyword:
+        check_class(node.arg, basestring)
+        return "{}={}".format(node.arg, ast_to_str(node.value))
     
     elif node_type == ast.Assign:
         # Targets can have more than one element. E.g. when the statement is: a = b = 6
@@ -93,11 +122,10 @@ def ast_to_str(node):
         if len(node.targets) != 1:
             raise CompilationError("Targets should be of length 1. Got: {}"
                                    .format(len(node.targets)))
-        
         target = node.targets[0]
         if not isinstance(target, ast.Name):
             raise CompilationError("Target should be a Name node. Got: {}"
-                                   .format(target.ctx))
+                                   .format(target))
         
         if not isinstance(target.ctx, ast.Store): # sanity check 
             raise AssertionError("Target.ctx should be store. Got: {}".format(target.ctx))
@@ -119,7 +147,9 @@ def wrap_expression(expr):
 
 # TODO: use symbtable module?
 def expression_symbols(node):
-    """ Returns a list of symbols used in an expression
+    """ Returns a list of symbols used in an expression.
+    
+        Does not check for unsupported functionality; use ast_to_st for that.
     """
     check_class(node, ast.AST)
     node_type = type(node)
@@ -141,6 +171,15 @@ def expression_symbols(node):
         for val in node.values:
             result += expression_symbols(val)
         return result
+    elif node_type == ast.Call:
+        result = []
+        for arg in node.args:
+            result += expression_symbols(arg)
+        for keyword in node.keywords:
+            result += expression_symbols(keyword)
+        return result
+    elif node_type == ast.keyword:
+        return expression_symbols(node.value)
     else:
         raise CompilationError("Unsupported node type: {}. Statement: {}"
                                .format(node_type, ast.dump(node)))
@@ -185,7 +224,7 @@ if __name__ == "__main__":
     
     def main():
         #stat = get_statement_from_code("b = True")
-        view(source_code = "b = None")
+        view(source_code = "b = my_fun( a= None)")
 
 if __name__ == "__main__":
     main()    

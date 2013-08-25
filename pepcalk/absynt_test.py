@@ -50,11 +50,24 @@ class AbsyntCase(unittest.TestCase):
         self.assertEqual(a2s(gsfc("a = True and False and True")), "a = (True and False and True)")
         self.assertEqual(a2s(gsfc("a = True or False or 3")), "a = (True or False or 3)")
         self.assertEqual(a2s(gsfc("a = True or False and True")), "a = (True or (False and True))")
-
+        
+        # Function calls
+        self.assertEqual(a2s(gsfc("a = dir()")), "a = dir()")
+        self.assertEqual(a2s(gsfc("a = my_fun(a, b)")), "a = my_fun(a, b)")
+        self.assertEqual(a2s(gsfc("a = my_fun(7, None)")), "a = my_fun(7, None)")
+        self.assertEqual(a2s(gsfc("a = my_fun(b = 3, a=22)")), "a = my_fun(b=3, a=22)")
+        self.assertEqual(a2s(gsfc("a = my_fun(-12, s='after')")), "a = my_fun(-12, s='after')")
+        self.assertEqual(a2s(gsfc("a = f(g('nested call'))")), "a = f(g('nested call'))")
+        
+        # non-keyword arg after keyword arg
+        self.assertRaises(SyntaxError, gsfc, "a = my_fun(s='before', -12)")
+        
         # Unsupported functionality
+        self.assertRaises(CompilationError, a2s, gsfc("a = my_fun(6, *args)"))
+        self.assertRaises(CompilationError, a2s, gsfc("a = my_fun(6, **kwargs)"))
         self.assertRaises(CompilationError, a2s, gsfc("a = b = 7"))
         self.assertRaises(CompilationError, a2s, gsfc("a, b = (2, 3)"))
-        self.assertRaises(CompilationError, a2s, gsfc("a = dir()"))
+        #self.assertRaises(CompilationError, a2s, gsfc("a = dir()"))
         
         
     def test_expression_symbols(self):

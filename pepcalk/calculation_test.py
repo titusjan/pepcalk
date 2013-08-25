@@ -57,5 +57,13 @@ class Case(unittest.TestCase):
         result = Calculation("b = None" ).compile().execute()
         self.assertEqual(result['b'], None)
         
+        # Function calls
+        result = Calculation("b = int(5.4)" ).compile().execute()
+        self.assertEqual(result['b'], 5)
+        
+        result = Calculation("b = int('10', base=2)" ).compile().execute()
+        self.assertEqual(result['b'], 2)
+
+        
 if __name__ == '__main__':
     unittest.main()

@@ -1,6 +1,6 @@
 """ pepcalk programm
 
-TODO: booleans, complex numbers.
+TODO: ast.IfExp, complex numbers.
 
 Applications:
     - Btw bonnetjes.
