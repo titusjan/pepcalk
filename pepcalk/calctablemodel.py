@@ -2,10 +2,22 @@
 import logging
 from PySide import QtCore 
 from PySide.QtCore import Qt
+
+from pepcalk.calculation import Assignment
 from pepcalk.utils import class_name
 
 logger = logging.getLogger(__name__)
 
+
+def assignment_class_name(assignment):
+    """ Returns the name of the class of the value after execution
+    
+        Returns empty string if the value is None
+    """
+    if assignment.value is None:
+        return ""
+    else:
+        return class_name(assignment.value)
 
 
 class CalcTableModel(QtCore.QAbstractTableModel):
@@ -57,10 +69,7 @@ class CalcTableModel(QtCore.QAbstractTableModel):
             elif col == self.COL_VALUE:
                 return assignment.value
             elif col == self.COL_TYPE:
-                if assignment.value is None:
-                    return ""
-                else:
-                    return class_name(assignment.value)
+                return assignment_class_name(assignment)
             else:
                 return None
 
@@ -127,3 +136,22 @@ class CalcTableModel(QtCore.QAbstractTableModel):
         bottom_right_index = self.index(len(self._calculation) - 1, self.N_COLS - 1)
         self.dataChanged.emit(top_left_index, bottom_right_index) 
 
+
+    def sort(self, column, sort_order):
+        """ Sorts the underlying calculation by column.
+        """
+        reverse = (sort_order == Qt.SortOrder.DescendingOrder)
+        if column == self.COL_ORDER:
+            self._calculation.sort(key = lambda a : a.order, reverse = reverse)
+        elif column == self.COL_TARGET:
+            self._calculation.sort(key = lambda a : a.target, reverse = reverse)
+        elif column == self.COL_SOURCE:
+            self._calculation.sort(key = lambda a : a.source, reverse = reverse)
+        elif column == self.COL_VALUE:
+            self._calculation.sort(key = lambda a : a.value, reverse = reverse)
+        elif column == self.COL_TYPE:
+            self._calculation.sort(key = assignment_class_name, reverse = reverse)
+        else:
+            raise AssertionError("Invalid sort column {}".format(column))
+
+        self.emitAllDataChanged()

@@ -11,6 +11,8 @@ logger = logging.getLogger(__name__)
 def assignment_order(assignment):
     return assignment.order
 
+
+
 class Assignment(object):
     """ The assignments in the calculation
     """
@@ -19,8 +21,8 @@ class Assignment(object):
         self._target = None
         self._expression = None
         self._compiled_expr = None
-        self.value = None
-        self.order = order
+        self._value = None
+        self._order = order
         
         if init is None:
             assert False, "not yet decided on implementation"
@@ -48,6 +50,14 @@ class Assignment(object):
     def compiled_expression(self):
         return self._compiled_expr
     
+    @property       
+    def order(self):
+        return self._order
+    
+    @order.setter       
+    def order(self, val):
+        self._order = val
+    
     @property
     def order_str(self):
         " The order as a string "
@@ -55,6 +65,16 @@ class Assignment(object):
             return ""
         else:
             return "{:2d}".format(self.order)
+        
+    @property       
+    def value(self):
+        "The value after execution."
+        return self._value
+    
+    @value.setter       
+    def value(self, val):
+        "The value after execution."
+        self._value = val
 
 
     def reset(self):
@@ -187,12 +207,15 @@ class Calculation(object):
 
     
     def compile(self):
-        """ Compiles and orders the assignments
+        """ Compiles and orders the assignments.
+        
+            Returns self so that you can use it in a chain: calc.compile().execute()
         """
         self.reset()
         self._sort_assignments()
         for assignment in self.assignments:
             assignment.compile()
+        return self
             
         
     def execute(self):
@@ -212,3 +235,13 @@ class Calculation(object):
             
         return local_vars
         
+        
+    def sort(self, key, reverse=False):
+        """ Sorts the order of the calculation as they are stored.
+        
+            Note: doesn't change the order field, which is used to determine the
+            execution order.
+        """
+        self._assignments.sort(key = key, reverse = reverse)
+        
+         

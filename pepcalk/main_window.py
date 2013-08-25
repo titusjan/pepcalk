@@ -86,8 +86,8 @@ class MainWindow(QtGui.QMainWindow):
         
         # Table columns
         self.col_settings = [None] * CalcTableModel.N_COLS
-        self.col_settings[CalcTableModel.COL_ORDER]  = ColumnSettings(visible=True, width=50)
-        self.col_settings[CalcTableModel.COL_TARGET] = ColumnSettings(visible=True, width=50)
+        self.col_settings[CalcTableModel.COL_ORDER]  = ColumnSettings(visible=True, width=75)
+        self.col_settings[CalcTableModel.COL_TARGET] = ColumnSettings(visible=True, width=75)
         self.col_settings[CalcTableModel.COL_SOURCE] = ColumnSettings(visible=True)
         self.col_settings[CalcTableModel.COL_VALUE]  = ColumnSettings(visible=True)
         self.col_settings[CalcTableModel.COL_TYPE]   = ColumnSettings(visible=True)
@@ -164,8 +164,8 @@ class MainWindow(QtGui.QMainWindow):
         self.calc_table.setEditTriggers(QtGui.QAbstractItemView.DoubleClicked | 
                                         QtGui.QAbstractItemView.AnyKeyPressed | 
                                         QtGui.QAbstractItemView.SelectedClicked)
+        self.calc_table.setSortingEnabled(True)
         
-        #self.calc_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         for idx, settings in enumerate(self.col_settings):
             self.calc_table.setColumnWidth(idx, settings.width)
         central_layout.addWidget(self.calc_table)

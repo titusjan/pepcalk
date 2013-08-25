@@ -24,7 +24,7 @@ class Case(unittest.TestCase):
         self.assertEqual(result, {})
         
         # Regular case
-        result = Calculation("b = a * 2; a = 4" ).execute()
+        result = Calculation("b = a * 2; a = 4" ).compile().execute()
         self.assertEqual(result['a'], 4)
         self.assertEqual(result['b'], 8)
         
