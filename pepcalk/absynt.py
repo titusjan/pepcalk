@@ -87,6 +87,12 @@ def ast_to_str(node):
     elif node_type == ast.Or:
         return "or"
     
+    elif node_type == ast.Attribute:
+        if not isinstance(node.ctx, ast.Load):
+            raise CompilationError("Only Attribute node.ctx 'Load' supported. Got: {}"
+                                   .format(node.ctx))    
+        return "{}.{}".format(ast_to_str(node.value), node.attr)
+    
     elif node_type == ast.Call:
         
         # Check for unsupported functionality: *args, **kwargs 
@@ -96,7 +102,7 @@ def ast_to_str(node):
             raise CompilationError("**kwargs not supported.")
         
         # Check for unsupported functionality: functions be a named function
-        if not isinstance(node.func, ast.Name):
+        if not isinstance(node.func, (ast.Name, ast.Attribute)):
             raise CompilationError("node.func should be a Name node. Got: {}"
                                    .format(node.func))
 
@@ -110,7 +116,7 @@ def ast_to_str(node):
         for keyword in node.keywords:
             param_strings.append(ast_to_str(keyword))
         #print param_strings
-        return "{}({})".format(node.func.id, ', '.join(param_strings))
+        return "{}({})".format(ast_to_str(node.func), ', '.join(param_strings))
 
     elif node_type == ast.keyword:
         check_class(node.arg, basestring)
@@ -171,6 +177,8 @@ def expression_symbols(node):
         for val in node.values:
             result += expression_symbols(val)
         return result
+    elif node_type == ast.Attribute:
+        return expression_symbols(node.value)
     elif node_type == ast.Call:
         result = []
         for arg in node.args:

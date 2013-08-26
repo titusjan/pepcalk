@@ -115,6 +115,11 @@ class Calculation(object):
         "Constructor"
         self._assignments = []
         self.import_from_source_code(code)
+        
+        # When execute() is called, the dictionaries below are copied and used
+        # as a starting point for the execution.
+        self.execution_global_vars = {} # TODO: standard?
+        self.execution_local_vars = {}
 
     def __len__(self):
         "Number of assignment in the calculation"
@@ -245,6 +250,7 @@ class Calculation(object):
         # Make sure that "from __future__ import division" is at the top of this module
         global_vars = {}
         local_vars = {}
+        exec "_np = __import__('numpy')" in global_vars, local_vars
         for assignment in sorted(self.assignments, key=assignment_order):
             assignment.value = eval(assignment.compiled_expression, global_vars, local_vars)
             local_vars[assignment.target] = assignment.value

@@ -51,6 +51,8 @@ class AbsyntCase(unittest.TestCase):
         self.assertEqual(a2s(gsfc("a = True or False or 3")), "a = (True or False or 3)")
         self.assertEqual(a2s(gsfc("a = True or False and True")), "a = (True or (False and True))")
         
+        self.assertEqual(a2s(gsfc("a = b1.c1.c2")), "a = b1.c1.c2")
+        
         # Function calls
         self.assertEqual(a2s(gsfc("a = dir()")), "a = dir()")
         self.assertEqual(a2s(gsfc("a = my_fun(a, b)")), "a = my_fun(a, b)")

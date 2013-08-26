@@ -1,6 +1,6 @@
 """ pepcalk programm
 
-TODO: ast.IfExp, complex numbers.
+TODO: ast.IfExp, complex numbers, divide by zero.
 
 Applications:
     - Btw bonnetjes.
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 TEST_PROGRAM = """
 b = 2/a
-a = 5
+a = _np.uint8(300)
 c = b+a
 """
 
