@@ -161,7 +161,8 @@ class MainWindow(QtGui.QMainWindow):
         self.calc_table = QtGui.QTableView()
         self.calc_table.setModel(self._table_model)
         self.calc_table.setItemDelegate(AssignmentDelegate())
-        self.calc_table.setEditTriggers(QtGui.QAbstractItemView.DoubleClicked | 
+        self.calc_table.setEditTriggers(QtGui.QAbstractItemView.DoubleClicked |
+                                        QtGui.QAbstractItemView.EditKeyPressed | 
                                         QtGui.QAbstractItemView.AnyKeyPressed | 
                                         QtGui.QAbstractItemView.SelectedClicked)
         self.calc_table.setSortingEnabled(True)
