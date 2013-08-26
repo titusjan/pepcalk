@@ -1,6 +1,13 @@
 import logging
 from pepcalk.utils import check_class
 
+class CircularDependencyError(ValueError):
+    """ Raised if the graph contains a circular dependency """
+    def __init__(self, msg, node_id):
+        " Constructor "
+        super(CircularDependencyError, self).__init__(msg)
+        self.node_id = node_id
+        
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +123,8 @@ class Graph(object):
                 Marks nodes to prevent duplicates.
             """
             if node in temp_marked_nodes:
-                raise ValueError("Circular dependency found for ({})".format(node.id))
+                raise CircularDependencyError("Circular dependency for: {}".format(node.id), 
+                                              node.id)
             
             if node not in perm_marked_nodes: 
                 

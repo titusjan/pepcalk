@@ -4,7 +4,8 @@ import logging, ast
 from pepcalk.absynt import (CompilationError, ast_to_str, wrap_expression, 
                             get_statement_from_code, get_statements_from_code, 
                             expression_symbols, parse_simple_assignment)
-from pepcalk.graph import Node, Graph
+from pepcalk.graph import Node, Graph, CircularDependencyError
+from pepcalk.utils import DEBUGGING
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +24,7 @@ class Assignment(object):
         self._expression = None
         self._compiled_expr = None
         self._value = None
+        self._error = None
         self._order = order
         
         if init is None:
@@ -72,18 +74,17 @@ class Assignment(object):
         "The value after execution."
         return self._value
     
-    @value.setter       
-    def value(self, val):
-        "The value after execution."
-        self._value = val
-
+    @property
+    def error(self):
+        return self._error
 
     def reset(self):
-        """ Sets order, value and compiled_expr to None
+        """ Sets order, value, error and compiled_expr to None
         """
         self.order = None
         self._compiled_expr = None
-        self.value = None
+        self._error = None
+        self._value = None
         
 
     def init_from_code(self, code_line):
@@ -105,8 +106,36 @@ class Assignment(object):
     def compile(self):
         """ Compiles the expression
         """
-        self._compiled_expr = compile(wrap_expression(self.expression), 
-                                      "<string>", "eval")
+        try:
+            self._compiled_expr = compile(wrap_expression(self.expression), 
+                                          "<string>", "eval")
+            self._error = None
+        except StandardError, ex:
+            self._error = ex
+            if DEBUGGING:
+                raise
+
+
+    def execute(self, global_vars, local_vars):
+        """ Executes the assignments. Returns dictionary with results.
+        
+            Pre: the calculation must be compiled first.
+        """
+        if self.compiled_expression is None:
+            raise AssertionError("Pre: assignment is not compiled: {}".format(self))
+        
+        if self._error is not None:
+            raise AssertionError("Pre: _error is not None but: {}".format(self._error))
+            
+        # Make sure that "from __future__ import division" is at the top of this module
+        try:
+            self._value = eval(self.compiled_expression, global_vars, local_vars)
+            self._error = None
+            return self._value
+        except StandardError, ex:
+            self._error = ex
+            if DEBUGGING:
+                raise
 
 
 class Calculation(object):
@@ -188,27 +217,22 @@ class Calculation(object):
         # Create assignment index by target
         assignment_dict = dict()
         for assignment in self.assignments:
-            if assignment.target not in assignment_dict: # TODO: ordered dict?
+            if assignment.target not in assignment_dict:
                 assignment_dict[assignment.target] = assignment
             else:
-                raise CompilationError("Duplicate target symbol found: {}"
-                                       .format(assignment.target))
+                ex = CompilationError("Duplicate target symbol: {}"
+                                      .format(assignment.target))
+                assignment._error = ex
+                raise ex 
 
         graph = self._get_symbol_graph(self._assignments)
         try:
             ordered_nodes = graph.linearize()
-        except ValueError, ex: # circular dependency
-            raise CompilationError(ex.message)
+        except CircularDependencyError, ex:
+            assignment_dict[ex.node_id]._error = ex
+            raise 
         
         lhs_symbols = [node.id for node in ordered_nodes]
-
-        # Disabled this check. Built-in symbols (None, True, etc) do not need to be
-        # defined within the calculation.
-        #all_symbols = set(lhs_symbols)
-        #target_symbols = set([assign.target for assign in self.assignments])
-        #if not target_symbols == all_symbols:
-        #    raise CompilationError("Undefined symbol(s): {}".
-        #                           format(", ".join(all_symbols - target_symbols)))
 
         # Set all orders to None.
         for assignment in self.assignments:
@@ -252,8 +276,7 @@ class Calculation(object):
         local_vars = {}
         exec "_np = __import__('numpy')" in global_vars, local_vars
         for assignment in sorted(self.assignments, key=assignment_order):
-            assignment.value = eval(assignment.compiled_expression, global_vars, local_vars)
-            local_vars[assignment.target] = assignment.value
+            local_vars[assignment.target] = assignment.execute(global_vars, local_vars)
             
         return local_vars
         

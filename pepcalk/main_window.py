@@ -9,11 +9,9 @@ from PySide import QtCore, QtGui
 from pepcalk.assignmentdelegate import AssignmentDelegate
 from pepcalk.calctablemodel import CalcTableModel
 from pepcalk.calculation import Calculation
-from pepcalk.utils import check_class
+from pepcalk.utils import DEBUGGING, check_class
 
 logger = logging.getLogger(__name__)
-
-DEBUGGING = True
 
 PROGRAM_NAME = 'PepCalk'
 PROGRAM_VERSION = '0.0.1'
@@ -89,7 +87,7 @@ class MainWindow(QtGui.QMainWindow):
         self.col_settings[CalcTableModel.COL_ORDER]  = ColumnSettings(visible=True, width=75)
         self.col_settings[CalcTableModel.COL_TARGET] = ColumnSettings(visible=True, width=75)
         self.col_settings[CalcTableModel.COL_SOURCE] = ColumnSettings(visible=True)
-        self.col_settings[CalcTableModel.COL_VALUE]  = ColumnSettings(visible=True)
+        self.col_settings[CalcTableModel.COL_VALUE]  = ColumnSettings(visible=True, width=300)
         self.col_settings[CalcTableModel.COL_TYPE]   = ColumnSettings(visible=True)
         for idx, header in enumerate(CalcTableModel.HEADERS):
             self.col_settings[idx].name = header
