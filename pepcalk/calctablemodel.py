@@ -67,7 +67,7 @@ class CalcTableModel(QtCore.QAbstractTableModel):
             elif col == self.COL_SOURCE:
                 return assignment.source
             elif col == self.COL_VALUE:
-                return assignment.value
+                return repr(assignment.value)
             elif col == self.COL_TYPE:
                 return assignment_class_name(assignment)
             else:
